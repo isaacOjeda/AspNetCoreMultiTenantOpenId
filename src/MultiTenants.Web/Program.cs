@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using MultiTenants.Fx;
 using MultiTenants.Fx.Contracts;
 using MultiTenants.Web.MultiTenancy;
@@ -18,6 +19,33 @@ builder.Services.AddDbContext<TenantAdminDbContext>(options =>
 builder.Services.AddDbContext<MyDbContext>();
 builder.Services.AddTransient<ITenantAccessor<Tenant>, TenantAccessor>();
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = "Cookies";
+    options.DefaultChallengeScheme = "oidc";
+})
+.AddCookie("Cookies", options =>
+{
+    options.Cookie.Name = ".MultiTenantWeb";
+})
+.AddOpenIdConnect("oidc", options =>
+{
+    options.Authority = builder.Configuration["IdentityServer:Host"];
+
+    options.ClientId = builder.Configuration["IdentityServer:ClientId"];
+    options.ClientSecret = builder.Configuration["IdentityServer:ClientSecret"];
+    options.ResponseType = OpenIdConnectResponseType.Code;
+
+    //options.Scope.Add("api");
+    options.Scope.Add("openid");
+    options.Scope.Add("profile");
+
+    options.SaveTokens = true;
+    options.GetClaimsFromUserInfoEndpoint = true;
+    options.TokenValidationParameters.NameClaimType = "name";
+});
+
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -28,8 +56,12 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseMultiTenancy();
+
 app.UseRouting();
+
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapRazorPages();
+
 app.Run();
