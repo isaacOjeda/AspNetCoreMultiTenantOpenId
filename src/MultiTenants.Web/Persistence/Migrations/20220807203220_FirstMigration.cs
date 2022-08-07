@@ -2,9 +2,9 @@
 
 #nullable disable
 
-namespace MultiTenants.Web.Persistence.Migrations.My
+namespace MultiTenants.Web.Persistence.Migrations
 {
-    public partial class MyDbContextFirstMigration : Migration
+    public partial class FirstMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -14,7 +14,7 @@ namespace MultiTenants.Web.Persistence.Migrations.My
                 {
                     ProductId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {

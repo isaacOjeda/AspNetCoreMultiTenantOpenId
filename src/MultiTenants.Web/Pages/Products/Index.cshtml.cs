@@ -1,12 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using MultiTenants.Web.Domain.Entities;
 using MultiTenants.Web.Persistence;
 
 namespace MultiTenants.Web.Pages.Products;
 
-[Authorize]
+// [Authorize]
 public class IndexModel : PageModel
 {
     private readonly MyDbContext _context;

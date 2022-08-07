@@ -1,49 +1,19 @@
+using Finbuckle.MultiTenant;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using MultiTenants.Fx;
-using MultiTenants.Fx.Contracts;
-using MultiTenants.Web.MultiTenancy;
+using MultiTenants.Web;
 using MultiTenants.Web.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.AddMultiTenancy()
-    .WithResolutionStrategy<HostResolutionStrategy>()
-    .WithStore<DbContextTenantStore>();
 
+builder.Services.AddMultiTenant<MultiTenantInfo>()
+    .WithHostStrategy()
+    .WithEFCoreStore<TenantAdminDbContext, MultiTenantInfo>();
 builder.Services.AddDbContext<TenantAdminDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("TenantAdmin")));
-
 builder.Services.AddDbContext<MyDbContext>();
-builder.Services.AddTransient<ITenantAccessor<Tenant>, TenantAccessor>();
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultScheme = "Cookies";
-    options.DefaultChallengeScheme = "oidc";
-})
-.AddCookie("Cookies", options =>
-{
-    options.Cookie.Name = ".MultiTenantWeb";
-})
-.AddOpenIdConnect("oidc", options =>
-{
-    options.Authority = builder.Configuration["IdentityServer:Host"];
-
-    options.ClientId = builder.Configuration["IdentityServer:ClientId"];
-    options.ClientSecret = builder.Configuration["IdentityServer:ClientSecret"];
-    options.ResponseType = OpenIdConnectResponseType.Code;
-
-    //options.Scope.Add("api");
-    options.Scope.Add("openid");
-    options.Scope.Add("profile");
-
-    options.SaveTokens = true;
-    options.GetClaimsFromUserInfoEndpoint = true;
-    options.TokenValidationParameters.NameClaimType = "name";
-});
 
 
 var app = builder.Build();
@@ -64,4 +34,29 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
+
+await SetupStore(app.Services);
+
 app.Run();
+
+async Task SetupStore(IServiceProvider sp)
+{
+    var scopeServices = sp.CreateScope().ServiceProvider;
+    var store = scopeServices.GetRequiredService<IMultiTenantStore<MultiTenantInfo>>();
+
+    await store.TryAddAsync(new MultiTenantInfo
+    {
+        Id = "tenant-1",
+        Identifier = "localhost",
+        Name = "My Dev Tenant",
+        ConnectionString = "Server=(localdb)\\mssqllocaldb;Database=AspNetCoreMultiTenantOpenId_DevTenant;Trusted_Connection=True;MultipleActiveResultSets=true"
+    });
+
+    await store.TryAddAsync(new MultiTenantInfo
+    {
+        Id = "tenant-2",
+        Identifier = "tenant2.localhost",
+        Name = "My Dev Tenant 2",
+        ConnectionString = "Server=(localdb)\\mssqllocaldb;Database=AspNetCoreMultiTenantOpenId_DevTenant02;Trusted_Connection=True;MultipleActiveResultSets=true"
+    });
+}

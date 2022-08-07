@@ -16,34 +16,42 @@ namespace MultiTenants.Web.Persistence.Migrations.TenantAdmin
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.0-rc.1.21452.10")
+                .HasAnnotation("ProductVersion", "6.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
-            modelBuilder.Entity("MultiTenants.Web.Domain.Entities.TenantAdmin.Tenant", b =>
+            modelBuilder.Entity("MultiTenants.Web.MultiTenantInfo", b =>
                 {
-                    b.Property<int>("TenantId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TenantId"), 1L, 1);
+                    b.Property<string>("Id")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("ConnectionString")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Identifier")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("TenantId");
+                    b.Property<string>("OpenIdAuthority")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.ToTable("Tenants");
+                    b.Property<string>("OpenIdClientId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OpenIdClientSecret")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Identifier")
+                        .IsUnique()
+                        .HasFilter("[Identifier] IS NOT NULL");
+
+                    b.ToTable("TenantInfo");
                 });
 #pragma warning restore 612, 618
         }

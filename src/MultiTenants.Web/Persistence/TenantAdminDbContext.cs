@@ -1,15 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using MultiTenants.Web.Domain.Entities.TenantAdmin;
+﻿using Finbuckle.MultiTenant.Stores;
+using Microsoft.EntityFrameworkCore;
 
 namespace MultiTenants.Web.Persistence;
-public class TenantAdminDbContext : DbContext
+public class TenantAdminDbContext : EFCoreStoreDbContext<MultiTenantInfo>
 {
-    public TenantAdminDbContext(DbContextOptions<TenantAdminDbContext> options)
+    public TenantAdminDbContext(DbContextOptions options)
         : base(options)
     {
 
     }
-
-
-    public DbSet<Tenant> Tenants => Set<Tenant>();
 }

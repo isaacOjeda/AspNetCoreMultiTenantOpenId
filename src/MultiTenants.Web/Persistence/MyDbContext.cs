@@ -1,18 +1,23 @@
-﻿using Microsoft.EntityFrameworkCore;
-using MultiTenants.Fx;
-using MultiTenants.Fx.Contracts;
+﻿using Finbuckle.MultiTenant;
+using Microsoft.EntityFrameworkCore;
 using MultiTenants.Web.Domain.Entities;
 
 namespace MultiTenants.Web.Persistence;
 public class MyDbContext : DbContext
 {
-    private readonly Tenant _tenant;
+    private readonly IMultiTenantContextAccessor<MultiTenantInfo> _tenantAccessor;
+    private readonly IWebHostEnvironment _env;
+    private readonly IConfiguration _config;
 
     public MyDbContext(
         DbContextOptions<MyDbContext> options,
-        ITenantAccessor<Tenant> tenantAccessor) : base(options)
+        IMultiTenantContextAccessor<MultiTenantInfo> tenantAccessor,
+        IWebHostEnvironment env,
+        IConfiguration config) : base(options)
     {
-        _tenant = tenantAccessor.Tenant ?? throw new ArgumentException(nameof(Tenant));
+        _tenantAccessor = tenantAccessor;
+        _env = env;
+        _config = config;
     }
 
 
@@ -22,6 +27,16 @@ public class MyDbContext : DbContext
     {
         base.OnConfiguring(optionsBuilder);
 
-        optionsBuilder.UseSqlServer(_tenant.Items["ConnectionString"].ToString()!);
+        var connectionString = string.Empty;
+        if (_tenantAccessor.MultiTenantContext is null && _env.IsDevelopment())
+        {
+            connectionString = _config.GetConnectionString("Default");
+        }
+        else
+        {
+            connectionString = _tenantAccessor.MultiTenantContext.TenantInfo.ConnectionString;
+        }
+
+        optionsBuilder.UseSqlServer(connectionString);
     }
 }
