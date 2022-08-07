@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace MultiTenants.Web.Persistence;
 public class TenantAdminDbContext : EFCoreStoreDbContext<MultiTenantInfo>
 {
-    public TenantAdminDbContext(DbContextOptions options)
+    public TenantAdminDbContext(DbContextOptions<TenantAdminDbContext> options)
         : base(options)
     {
 

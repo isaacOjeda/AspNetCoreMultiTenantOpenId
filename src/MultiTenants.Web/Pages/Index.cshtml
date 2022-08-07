@@ -1,9 +1,14 @@
 ﻿@page
 @using Microsoft.AspNetCore.Authentication
 @model IndexModel
+
+@inject Finbuckle.MultiTenant.IMultiTenantContextAccessor<MultiTenantInfo> TenantAccessor
+
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Tenant " + TenantAccessor.MultiTenantContext.TenantInfo.Name;
 }
+
+<h1>@TenantAccessor.MultiTenantContext.TenantInfo.Name</h1>
 
 @if(User.Identity!.IsAuthenticated)
 {
@@ -17,4 +22,8 @@
         <li>access_token: @(await HttpContext.GetTokenAsync("access_token"))</li>
         <li>id_token: @(await HttpContext.GetTokenAsync("id_token"))</li>
     </ul>
+}
+else
+{
+    <span>Anonymous User</span>
 }

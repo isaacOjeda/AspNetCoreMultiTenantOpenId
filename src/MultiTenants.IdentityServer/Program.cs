@@ -100,16 +100,38 @@ async Task SeedDefaultClients()
 
     await context.Database.EnsureCreatedAsync();
 
-    var client = await manager.FindByClientIdAsync("multitenantweb");
+    var client = await manager.FindByClientIdAsync("tenant01");
 
     if (client is null)
     {
         await manager.CreateAsync(new OpenIddictApplicationDescriptor
         {
-            ClientId = "multitenantweb",
-            ClientSecret = "multitenantweb-web-app-secret",
-            DisplayName = "Multi-Tenant Web Application",
+            ClientId = "tenant01",
+            ClientSecret = "tenant01-web-app-secret",
+            DisplayName = "Multi-Tenant Web Application 01",
             RedirectUris = { new Uri("https://localhost:7221/signin-oidc") },
+            Permissions =
+            {
+                OpenIddictConstants.Permissions.Endpoints.Authorization,
+                OpenIddictConstants.Permissions.Endpoints.Token,
+
+                OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
+                OpenIddictConstants.Permissions.GrantTypes.ClientCredentials,
+                OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
+
+
+                OpenIddictConstants.Permissions.Prefixes.Scope + "api",
+                OpenIddictConstants.Permissions.Prefixes.Scope + "profile",
+                OpenIddictConstants.Permissions.ResponseTypes.Code
+            }
+        });
+
+        await manager.CreateAsync(new OpenIddictApplicationDescriptor
+        {
+            ClientId = "tenant02",
+            ClientSecret = "tenant02-web-app-secret",
+            DisplayName = "Multi-Tenant Web Application 02",
+            RedirectUris = { new Uri("https://tenant2.localhost:7221/signin-oidc") },
             Permissions =
             {
                 OpenIddictConstants.Permissions.Endpoints.Authorization,
