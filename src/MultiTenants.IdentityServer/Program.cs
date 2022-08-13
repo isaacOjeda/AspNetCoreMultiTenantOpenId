@@ -1,6 +1,4 @@
 using Finbuckle.MultiTenant;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using MultiTenants.IdentityServer;
 using MultiTenants.IdentityServer.Domain.Entities.TenantAdmin;
 using MultiTenants.IdentityServer.Persistence;
@@ -8,64 +6,12 @@ using OpenIddict.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<TenantAdminDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("TenantAdmin")));
-builder.Services.AddDbContext<IdentityServerDbContext>();
-builder.Services.AddDefaultIdentity<IdentityUser>()
-    .AddEntityFrameworkStores<IdentityServerDbContext>();
-
-builder.Services.AddOpenIddict()
-
-    // Register the OpenIddict core components.
-    .AddCore(options =>
-    {
-        // Configure OpenIddict to use the EF Core stores/models.
-        options
-            .UseEntityFrameworkCore()
-            .UseDbContext<IdentityServerDbContext>();
-    })
-    // Register the OpenIddict server components.
-    .AddServer(options =>
-    {
-        options
-            .AllowClientCredentialsFlow()
-            .AllowAuthorizationCodeFlow()
-            .RequireProofKeyForCodeExchange()
-            .AllowRefreshTokenFlow();
-
-        options
-            .SetTokenEndpointUris("/connect/token")
-            .SetAuthorizationEndpointUris("/connect/authorize")
-            .SetUserinfoEndpointUris("/connect/userinfo");
-
-        // Encryption and signing of tokens
-        options
-            .AddEphemeralEncryptionKey()
-            .AddEphemeralSigningKey()
-            .DisableAccessTokenEncryption();
-
-        // Register scopes (permissions)
-        options.RegisterScopes("api");
-        options.RegisterScopes("profile");
-
-        // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
-        options
-            .UseAspNetCore()
-            .EnableTokenEndpointPassthrough()
-            .EnableAuthorizationEndpointPassthrough()
-            .EnableUserinfoEndpointPassthrough();
-    });
-
-builder.Services.AddMultiTenant<MultiTenantInfo>()
-    .WithBasePathStrategy()
-    .WithEFCoreStore<TenantAdminDbContext, MultiTenantInfo>();
-
-builder.Services.AddRazorPages(options =>
-{
-    options.Conventions.Add(new MultiTenantRouteConvention());
-});
-builder.Services.AddControllers();
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services
+    .AddDbContexts(builder.Configuration)
+    .AddIdentity()
+    .AddOpenIdConnect()
+    .AddMultiTenantSupport()
+    .AddAspNetServices();
 
 
 var app = builder.Build();
