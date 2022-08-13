@@ -88,9 +88,9 @@ static async Task SetupStore(IServiceProvider sp)
         Identifier = "localhost",
         Name = "My Dev Tenant",
         ConnectionString = "Server=(localdb)\\mssqllocaldb;Database=AspNetCoreMultiTenantOpenId_DevTenant;Trusted_Connection=True;MultipleActiveResultSets=true",
-        OpenIdAuthority = "tenant01",
-        OpenIdClientId = "tenant01-web-app-secret",
-        OpenIdClientSecret = "https://localhost:7193"
+        OpenIdClientId = "tenant01",
+        OpenIdClientSecret = "tenant01-web-app-secret",
+        OpenIdAuthority = "https://localhost:7193"
     });
 
     await store.TryAddAsync(new MultiTenantInfo
@@ -99,8 +99,8 @@ static async Task SetupStore(IServiceProvider sp)
         Identifier = "tenant2.localhost",
         Name = "My Dev Tenant 2",
         ConnectionString = "Server=(localdb)\\mssqllocaldb;Database=AspNetCoreMultiTenantOpenId_DevTenant02;Trusted_Connection=True;MultipleActiveResultSets=true",
-        OpenIdAuthority = "tenant02",
-        OpenIdClientId = "tenant02-web-app-secret",
-        OpenIdClientSecret = "https://localhost:7193"
+        OpenIdClientId = "tenant02",
+        OpenIdClientSecret = "tenant02-web-app-secret",
+        OpenIdAuthority = "https://tenant2.localhost:7193"
     });
 }

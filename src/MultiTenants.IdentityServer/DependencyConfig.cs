@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MultiTenants.IdentityServer.Domain.Entities.TenantAdmin;
 using MultiTenants.IdentityServer.Persistence;
@@ -10,10 +9,7 @@ public static class DependencyConfig
     public static IServiceCollection AddAspNetServices(this IServiceCollection services)
     {
 
-        services.AddRazorPages(options =>
-        {
-            options.Conventions.Add(new MultiTenantRouteConvention());
-        });
+        services.AddRazorPages();
         services.AddControllers();
         services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -23,13 +19,8 @@ public static class DependencyConfig
     public static IServiceCollection AddMultiTenantSupport(this IServiceCollection services)
     {
         services.AddMultiTenant<MultiTenantInfo>()
-            .WithBasePathStrategy()
-            .WithEFCoreStore<TenantAdminDbContext, MultiTenantInfo>()
-            .WithPerTenantAuthentication()
-            .WithPerTenantOptions<CookieAuthenticationOptions>((options, tenant) =>
-            {
-                options.Cookie.Name = $".IdentityAuth{tenant.Id}";
-            });
+            .WithHostStrategy()
+            .WithEFCoreStore<TenantAdminDbContext, MultiTenantInfo>();
 
         return services;
     }
@@ -45,11 +36,6 @@ public static class DependencyConfig
             options.Password.RequireUppercase = false;
             options.Password.RequiredLength = 6;
             options.Password.RequiredUniqueChars = 1;
-
-            // Lockout settings.
-            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-            options.Lockout.MaxFailedAccessAttempts = 5;
-            options.Lockout.AllowedForNewUsers = true;
 
             // User settings.
             options.User.AllowedUserNameCharacters =
@@ -95,7 +81,8 @@ public static class DependencyConfig
                 options
                     .SetTokenEndpointUris("/connect/token")
                     .SetAuthorizationEndpointUris("/connect/authorize")
-                    .SetUserinfoEndpointUris("/connect/userinfo");
+                    .SetUserinfoEndpointUris("/connect/userinfo")
+                    .SetLogoutEndpointUris("/connect/logout");
 
                 // Encryption and signing of tokens
                 options
@@ -112,7 +99,8 @@ public static class DependencyConfig
                     .UseAspNetCore()
                     .EnableTokenEndpointPassthrough()
                     .EnableAuthorizationEndpointPassthrough()
-                    .EnableUserinfoEndpointPassthrough();
+                    .EnableUserinfoEndpointPassthrough()
+                    .EnableLogoutEndpointPassthrough();
             });
 
         return services;

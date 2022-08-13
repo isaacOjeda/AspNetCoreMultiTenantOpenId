@@ -29,27 +29,10 @@ else
 
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
 
+app.UseStaticFiles();
 app.UseRouting();
 app.UseMultiTenant();
-app.Use(async (context, next) =>
-{
-    using var scope = context.RequestServices.CreateScope();
-
-    var tenantContext = scope.ServiceProvider.GetRequiredService<IMultiTenantContextAccessor<MultiTenantInfo>>();
-
-    if (tenantContext.MultiTenantContext?.TenantInfo is null)
-    {
-        context.Response.StatusCode = StatusCodes.Status403Forbidden;
-        context.Response.ContentType = "text/html";
-        await context.Response.WriteAsync("Missing tenant");
-
-        return;
-    }
-
-    await next(context);
-});
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -83,6 +66,7 @@ async Task SeedDefaultClients()
             ClientSecret = "tenant01-web-app-secret",
             DisplayName = "Multi-Tenant Web Application 01",
             RedirectUris = { new Uri("https://localhost:7221/signin-oidc") },
+            PostLogoutRedirectUris = { new Uri("https://localhost:7221/signout-callback-oidc") },
             Permissions =
             {
                 OpenIddictConstants.Permissions.Endpoints.Authorization,
@@ -105,6 +89,7 @@ async Task SeedDefaultClients()
             ClientSecret = "tenant02-web-app-secret",
             DisplayName = "Multi-Tenant Web Application 02",
             RedirectUris = { new Uri("https://tenant2.localhost:7221/signin-oidc") },
+            PostLogoutRedirectUris = { new Uri("https://tenant2.localhost:7221/signout-callback-oidc") },
             Permissions =
             {
                 OpenIddictConstants.Permissions.Endpoints.Authorization,

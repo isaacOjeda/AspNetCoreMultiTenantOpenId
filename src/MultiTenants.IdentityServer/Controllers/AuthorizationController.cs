@@ -14,11 +14,12 @@ public class AuthorizationController : ControllerBase
 {
 
 
-    [HttpGet("~/{__tenant__}/connect/authorize")]
-    [HttpPost("~/{__tenant__}/connect/authorize")]
+    [HttpGet("~/connect/authorize")]
+    [HttpPost("~/connect/authorize")]
     [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Authorize()
     {
+
         var request = HttpContext.GetOpenIddictServerRequest() ??
               throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
 
@@ -88,7 +89,7 @@ public class AuthorizationController : ControllerBase
 
 
 
-    [HttpPost("~/{__tenant__}/connect/token")]
+    [HttpPost("~/connect/token")]
     public async Task<IActionResult> Exchange()
     {
         var request = HttpContext.GetOpenIddictServerRequest() ??
@@ -133,7 +134,7 @@ public class AuthorizationController : ControllerBase
     }
 
     [Authorize(AuthenticationSchemes = OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)]
-    [HttpGet("~/{__tenant__}/connect/userinfo")]
+    [HttpGet("~/connect/userinfo")]
     public async Task<IActionResult> Userinfo()
     {
         var claimsPrincipal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal;
@@ -145,5 +146,26 @@ public class AuthorizationController : ControllerBase
             Occupation = "Developer",
             Age = 31
         });
+    }
+
+
+
+    [HttpPost("~/connect/logout"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> Logout([FromServices] SignInManager<IdentityUser> signInManager)
+    {
+        // Ask ASP.NET Core Identity to delete the local and external cookies created
+        // when the user agent is redirected from the external identity provider
+        // after a successful authentication flow (e.g Google or Facebook).
+        await signInManager.SignOutAsync();
+
+        // Returning a SignOutResult will ask OpenIddict to redirect the user agent
+        // to the post_logout_redirect_uri specified by the client application or to
+        // the RedirectUri specified in the authentication properties if none was set.
+        return SignOut(
+            authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+            properties: new AuthenticationProperties
+            {
+                RedirectUri = "/"
+            });
     }
 }
