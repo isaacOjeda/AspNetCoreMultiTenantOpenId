@@ -14,8 +14,8 @@ public class AuthorizationController : ControllerBase
 {
 
 
-    [HttpGet("~/connect/authorize")]
-    [HttpPost("~/connect/authorize")]
+    [HttpGet("~/{__tenant__}/connect/authorize")]
+    [HttpPost("~/{__tenant__}/connect/authorize")]
     [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Authorize()
     {
@@ -88,7 +88,7 @@ public class AuthorizationController : ControllerBase
 
 
 
-    [HttpPost("~/connect/token")]
+    [HttpPost("~/{__tenant__}/connect/token")]
     public async Task<IActionResult> Exchange()
     {
         var request = HttpContext.GetOpenIddictServerRequest() ??
@@ -133,7 +133,7 @@ public class AuthorizationController : ControllerBase
     }
 
     [Authorize(AuthenticationSchemes = OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)]
-    [HttpGet("~/connect/userinfo")]
+    [HttpGet("~/{__tenant__}/connect/userinfo")]
     public async Task<IActionResult> Userinfo()
     {
         var claimsPrincipal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal;

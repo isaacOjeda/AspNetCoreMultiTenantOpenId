@@ -1,16 +1,18 @@
+using Finbuckle.MultiTenant;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MultiTenants.IdentityServer;
+using MultiTenants.IdentityServer.Domain.Entities.TenantAdmin;
 using MultiTenants.IdentityServer.Persistence;
 using OpenIddict.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<IdentityServerDbContext>(options =>
-{
-    options.UseSqlServer(connectionString);
-    options.UseOpenIddict();
-});
+builder.Services.AddDbContext<TenantAdminDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("TenantAdmin")));
+builder.Services.AddDbContext<IdentityServerDbContext>();
+builder.Services.AddDefaultIdentity<IdentityUser>()
+    .AddEntityFrameworkStores<IdentityServerDbContext>();
 
 builder.Services.AddOpenIddict()
 
@@ -54,12 +56,17 @@ builder.Services.AddOpenIddict()
             .EnableUserinfoEndpointPassthrough();
     });
 
+builder.Services.AddMultiTenant<MultiTenantInfo>()
+    .WithBasePathStrategy()
+    .WithEFCoreStore<TenantAdminDbContext, MultiTenantInfo>();
 
-builder.Services.AddDefaultIdentity<IdentityUser>()
-    .AddEntityFrameworkStores<IdentityServerDbContext>();
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.Add(new MultiTenantRouteConvention());
+});
 builder.Services.AddControllers();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
 
 var app = builder.Build();
 
@@ -74,11 +81,29 @@ else
     app.UseHsts();
 }
 
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseMultiTenant();
+app.Use(async (context, next) =>
+{
+    using var scope = context.RequestServices.CreateScope();
 
+    var tenantContext = scope.ServiceProvider.GetRequiredService<IMultiTenantContextAccessor<MultiTenantInfo>>();
+
+    if (tenantContext.MultiTenantContext?.TenantInfo is null)
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        context.Response.ContentType = "text/html";
+        await context.Response.WriteAsync("Missing tenant");
+
+        return;
+    }
+
+    await next(context);
+});
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -86,11 +111,13 @@ app.MapRazorPages();
 app.MapControllers();
 
 await SeedDefaultClients();
+await SetupTenants();
 
 app.Run();
 
 
 
+// OpenIddict info
 async Task SeedDefaultClients()
 {
     using var scope = app.Services.CreateScope();
@@ -148,4 +175,34 @@ async Task SeedDefaultClients()
             }
         });
     }
+}
+// Multitenant info
+async Task SetupTenants()
+{
+    using var scope = app.Services.CreateScope();
+
+    var store = scope.ServiceProvider.GetRequiredService<IMultiTenantStore<MultiTenantInfo>>();
+
+    var tenants = await store.GetAllAsync();
+
+    if (tenants.Count() > 0)
+    {
+        return;
+    }
+
+    await store.TryAddAsync(new MultiTenantInfo
+    {
+        Id = Guid.NewGuid().ToString(),
+        Identifier = "tenant1",
+        Name = "My Identity Dev Tenant",
+        ConnectionString = "Server=(localdb)\\mssqllocaldb;Database=AspNetCoreMultiTenantOpenId_IdentityServer01;Trusted_Connection=True;MultipleActiveResultSets=true"
+    });
+
+    await store.TryAddAsync(new MultiTenantInfo
+    {
+        Id = Guid.NewGuid().ToString(),
+        Identifier = "tenant2",
+        Name = "My Identity Dev Tenant 2",
+        ConnectionString = "Server=(localdb)\\mssqllocaldb;Database=AspNetCoreMultiTenantOpenId_IdentityServer02;Trusted_Connection=True;MultipleActiveResultSets=true"
+    });
 }
