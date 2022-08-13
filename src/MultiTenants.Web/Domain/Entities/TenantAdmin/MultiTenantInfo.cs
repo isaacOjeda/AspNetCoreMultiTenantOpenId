@@ -1,6 +1,6 @@
 ﻿using Finbuckle.MultiTenant;
 
-namespace MultiTenants.Web;
+namespace MultiTenants.Web.Domain.Entities.TenantAdmin;
 public class MultiTenantInfo : ITenantInfo
 {
     public string Id { get; set; }

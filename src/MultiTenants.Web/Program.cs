@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using MultiTenants.Web;
+using MultiTenants.Web.Domain.Entities.TenantAdmin;
 using MultiTenants.Web.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
