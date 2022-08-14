@@ -75,6 +75,7 @@ async Task SeedDefaultClients()
                 OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
                 OpenIddictConstants.Permissions.GrantTypes.ClientCredentials,
                 OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
+                OpenIddictConstants.Permissions.Endpoints.Logout,
 
 
                 OpenIddictConstants.Permissions.Prefixes.Scope + "api",
@@ -98,7 +99,7 @@ async Task SeedDefaultClients()
                 OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
                 OpenIddictConstants.Permissions.GrantTypes.ClientCredentials,
                 OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
-
+                OpenIddictConstants.Permissions.Endpoints.Logout,
 
                 OpenIddictConstants.Permissions.Prefixes.Scope + "api",
                 OpenIddictConstants.Permissions.Prefixes.Scope + "profile",

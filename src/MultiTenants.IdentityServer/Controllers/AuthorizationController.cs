@@ -150,7 +150,7 @@ public class AuthorizationController : ControllerBase
 
 
 
-    [HttpPost("~/connect/logout"), ValidateAntiForgeryToken]
+    [HttpPost("~/connect/logout"), HttpGet("~/connect/logout"), IgnoreAntiforgeryToken]
     public async Task<IActionResult> Logout([FromServices] SignInManager<IdentityUser> signInManager)
     {
         // Ask ASP.NET Core Identity to delete the local and external cookies created
