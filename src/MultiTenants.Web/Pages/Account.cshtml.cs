@@ -19,10 +19,6 @@ namespace MultiTenants.Web.Pages
 
         public IActionResult OnPostSignOut()
         {
-            //await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-
-            //return RedirectToPage("Index");
             return SignOut(
                 new AuthenticationProperties { RedirectUri = "/" },
                 CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);

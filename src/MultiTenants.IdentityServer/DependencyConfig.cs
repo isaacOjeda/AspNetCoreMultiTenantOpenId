@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MultiTenants.IdentityServer.Domain.Entities.TenantAdmin;
 using MultiTenants.IdentityServer.Persistence;
@@ -20,7 +21,13 @@ public static class DependencyConfig
     {
         services.AddMultiTenant<MultiTenantInfo>()
             .WithHostStrategy()
-            .WithEFCoreStore<TenantAdminDbContext, MultiTenantInfo>();
+            .WithEFCoreStore<TenantAdminDbContext, MultiTenantInfo>()
+            .WithPerTenantAuthentication()
+            .WithPerTenantOptions<CookieAuthenticationOptions>((o, tenant) =>
+            {
+                o.Cookie.Name = $".Identity_{tenant.Identifier}";
+                o.LoginPath = "/Identity/Account/Login";
+            });
 
         return services;
     }
