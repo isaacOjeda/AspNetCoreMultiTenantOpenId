@@ -1,51 +1,15 @@
 using Finbuckle.MultiTenant;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using MultiTenants.Web;
 using MultiTenants.Web.Domain.Entities.TenantAdmin;
-using MultiTenants.Web.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddRazorPages();
+builder.Services
+    .AddDbContexts(builder.Configuration)
+    .AddMultiTenantSupport()
+    .AddWebAuthentication()
+    .AddRazorPages();
 
-builder.Services.AddDbContext<TenantAdminDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("TenantAdmin")));
-builder.Services.AddDbContext<MyDbContext>();
-
-builder.Services.AddMultiTenant<MultiTenantInfo>()
-    .WithHostStrategy()
-    .WithEFCoreStore<TenantAdminDbContext, MultiTenantInfo>()
-    .WithPerTenantAuthentication()
-    .WithPerTenantOptions<CookieAuthenticationOptions>((options, tenant) =>
-    {
-        options.Cookie.Name = $".Auth{tenant.Id}";
-    })
-    .WithPerTenantOptions<OpenIdConnectOptions>((options, tenant) =>
-    {
-        options.Scope.Add("openid");
-        options.Scope.Add("profile");
-
-        options.SaveTokens = true;
-        options.GetClaimsFromUserInfoEndpoint = true;
-        options.TokenValidationParameters.NameClaimType = "name";
-        options.ResponseType = OpenIdConnectResponseType.Code;
-
-        options.Authority = tenant.OpenIdAuthority;
-        options.ClientId = tenant.OpenIdClientId;
-        options.ClientSecret = tenant.OpenIdClientSecret;
-    });
-
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-})
-.AddCookie()
-.AddOpenIdConnect();
 
 var app = builder.Build();
 
@@ -66,11 +30,11 @@ app.UseAuthorization();
 app.MapRazorPages();
 
 
-await SetupStore(app.Services);
+await SetupDevTenants(app.Services);
 
 app.Run();
 
-static async Task SetupStore(IServiceProvider sp)
+static async Task SetupDevTenants(IServiceProvider sp)
 {
     var scopeServices = sp.CreateScope().ServiceProvider;
     var store = scopeServices.GetRequiredService<IMultiTenantStore<MultiTenantInfo>>();
