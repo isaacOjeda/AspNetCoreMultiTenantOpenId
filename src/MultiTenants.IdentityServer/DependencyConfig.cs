@@ -80,7 +80,6 @@ public static class DependencyConfig
             .AddServer(options =>
             {
                 options
-                    .AllowClientCredentialsFlow()
                     .AllowAuthorizationCodeFlow()
                     .RequireProofKeyForCodeExchange()
                     .AllowRefreshTokenFlow();

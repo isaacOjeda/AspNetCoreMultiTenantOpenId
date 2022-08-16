@@ -97,24 +97,7 @@ public class AuthorizationController : ControllerBase
 
         ClaimsPrincipal claimsPrincipal;
 
-        if (request.IsClientCredentialsGrantType())
-        {
-            // Note: the client credentials are automatically validated by OpenIddict:
-            // if client_id or client_secret are invalid, this action won't be invoked.
-
-            var identity = new ClaimsIdentity(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
-
-            // Subject (sub) is a required field, we use the client id as the subject identifier here.
-            identity.AddClaim(OpenIddictConstants.Claims.Subject, request.ClientId ?? throw new InvalidOperationException());
-
-            // Add some claim, don't forget to add destination otherwise it won't be added to the access token.
-            identity.AddClaim("some-claim", "some-value", OpenIddictConstants.Destinations.AccessToken);
-
-            claimsPrincipal = new ClaimsPrincipal(identity);
-
-            claimsPrincipal.SetScopes(request.GetScopes());
-        }
-        else if (request.IsAuthorizationCodeGrantType())
+        if (request.IsAuthorizationCodeGrantType())
         {
             // Retrieve the claims principal stored in the authorization code
             claimsPrincipal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal;
@@ -150,7 +133,9 @@ public class AuthorizationController : ControllerBase
 
 
 
-    [HttpPost("~/connect/logout"), HttpGet("~/connect/logout"), IgnoreAntiforgeryToken]
+    [HttpPost("~/connect/logout")]
+    [HttpGet("~/connect/logout")]
+    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Logout([FromServices] SignInManager<IdentityUser> signInManager)
     {
         // Ask ASP.NET Core Identity to delete the local and external cookies created
