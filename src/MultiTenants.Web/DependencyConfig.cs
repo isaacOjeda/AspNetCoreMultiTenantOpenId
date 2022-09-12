@@ -9,19 +9,6 @@ namespace MultiTenants.Web;
 
 public static class DependencyConfig
 {
-    public static IServiceCollection AddAuthentications(this IServiceCollection services)
-    {
-        services.AddAuthentication(options =>
-        {
-            options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-        })
-        .AddCookie()
-        .AddOpenIdConnect();
-
-        return services;
-    }
-
     public static IServiceCollection AddDbContexts(this IServiceCollection services, string connectionString)
     {
         services.AddDbContext<TenantAdminDbContext>(options =>
@@ -61,7 +48,6 @@ public static class DependencyConfig
 
     public static IServiceCollection AddWebAuthentication(this IServiceCollection services)
     {
-
         services.AddAuthentication(options =>
         {
             options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -69,7 +55,6 @@ public static class DependencyConfig
         })
         .AddCookie()
         .AddOpenIdConnect();
-
 
         return services;
     }

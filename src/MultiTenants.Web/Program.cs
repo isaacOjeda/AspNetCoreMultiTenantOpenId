@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddDbContexts(builder.Configuration.GetConnectionString("TenantAdmin"));
 builder.Services.AddMuiltiTenantSupport();
-builder.Services.AddAuthentications();
+builder.Services.AddWebAuthentication();
 
 
 var app = builder.Build();
