@@ -58,4 +58,19 @@ public static class DependencyConfig
 
         return services;
     }
+
+    public static IServiceCollection AddWebAuthentication(this IServiceCollection services)
+    {
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+        })
+        .AddCookie()
+        .AddOpenIdConnect();
+
+
+        return services;
+    }
 }

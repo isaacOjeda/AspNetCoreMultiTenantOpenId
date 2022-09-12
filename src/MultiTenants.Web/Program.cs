@@ -28,11 +28,11 @@ app.UseAuthorization();
 app.MapRazorPages();
 
 
-await SetupStore(app.Services);
+await SetupDevTenants(app.Services);
 
 app.Run();
 
-static async Task SetupStore(IServiceProvider sp)
+static async Task SetupDevTenants(IServiceProvider sp)
 {
     var scopeServices = sp.CreateScope().ServiceProvider;
     var store = scopeServices.GetRequiredService<IMultiTenantStore<MultiTenantInfo>>();
