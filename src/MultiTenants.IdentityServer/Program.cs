@@ -125,7 +125,7 @@ async Task SetupTenants()
     await store.TryAddAsync(new MultiTenantInfo
     {
         Id = Guid.NewGuid().ToString(),
-        Identifier = "tenant1",
+        Identifier = "localhost",
         Name = "My Identity Dev Tenant",
         ConnectionString = "Server=(localdb)\\mssqllocaldb;Database=AspNetCoreMultiTenantOpenId_IdentityServer01;Trusted_Connection=True;MultipleActiveResultSets=true"
     });
